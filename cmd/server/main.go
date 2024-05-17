@@ -1,9 +1,13 @@
 package main
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"io"
 	"net/http"
 )
+
+var mapURL = map[string]string{}
 
 func mainPage(w http.ResponseWriter, r *http.Request) {
 	//TODO: handler "/"
@@ -16,7 +20,12 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
-		w.Write(body)
+		hasher := sha1.New()
+		hasher.Write(body)
+		hash := hex.EncodeToString(hasher.Sum(nil))
+		mapURL[string(body)] = hash[:6]
+		//fmt.Print(mapURL)
+		w.WriteHeader(http.StatusCreated)
 
 	}
 }
