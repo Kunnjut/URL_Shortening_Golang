@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"github.com/gorilla/mux"
 	"io"
 	"net/http"
 	"strconv"
@@ -24,8 +25,6 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 		hasher.Write(body)
 		hash := hex.EncodeToString(hasher.Sum(nil))
 		mapURL[string(body)] = hash[:6]
-		//fmt.Print(mapURL)
-		//TODO: Сделать ответ "Ссылка запроса - полный ответ с localhost" (мб)
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "text/plain")
 		w.Header().Set("Content-Length", strconv.Itoa(len(mapURL[string(body)])))
@@ -35,14 +34,27 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func idPage(w http.ResponseWriter, r *http.Request) {
-	//TODO: handler "id"
+	if r.Method != http.MethodGet {
+		http.Error(w, "Only GET method is allowed", http.StatusMethodNotAllowed)
+	}
+	vars := mux.Vars(r)
+	id := vars["id"] // TODO: Значение мы получили здесь, вытаскиваем ключ из мапы по этому ключу и делаем редирект
+	fmt.Fprintln(w, "id = ", id)
+	if key, ok := mapURL[id]; ok {
+		fmt.Fprintln(w, key)
+		fmt.Fprintln(w, mapURL)
+	} else {
+		fmt.Fprintln(w, "NOTHING")
+		fmt.Fprintln(w, mapURL)
+	}
+	//curl -i -X  GET http://localhost:8080/44dac6
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", mainPage)
-	mux.HandleFunc("/{id}", idPage)
-	err := http.ListenAndServe(":8080", mux)
+	router := mux.NewRouter()
+	router.HandleFunc("/", mainPage)
+	router.HandleFunc("/{id}", idPage)
+	err := http.ListenAndServe(":8080", router)
 	if err != nil {
 		panic(err)
 	}
