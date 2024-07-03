@@ -12,6 +12,17 @@ import (
 
 var mapURL = map[string]string{}
 
+func searchKey(val string) string {
+	result := ""
+	for key, value := range mapURL {
+		if value == val {
+			result = key
+			break
+		}
+	}
+	return result
+}
+
 func mainPage(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
@@ -39,14 +50,20 @@ func idPage(w http.ResponseWriter, r *http.Request) {
 	}
 	vars := mux.Vars(r)
 	id := vars["id"] // TODO: Значение мы получили здесь, вытаскиваем ключ из мапы по этому ключу и делаем редирект
-	fmt.Fprintln(w, "id = ", id)
-	if key, ok := mapURL[id]; ok {
-		fmt.Fprintln(w, key)
-		fmt.Fprintln(w, mapURL)
-	} else {
-		fmt.Fprintln(w, "NOTHING")
-		fmt.Fprintln(w, mapURL)
-	}
+	key := searchKey(id)
+	w.Header().Set("Content-Length", "50")
+	w.Header().Del("Date")
+	w.WriteHeader(http.StatusTemporaryRedirect)
+	w.Header().Set("Location", "https://"+key)
+	fmt.Fprintln(w, key)
+
+	//if key, ok := mapURL[id]; ok {
+	//	fmt.Fprintln(w, key)
+	//	fmt.Fprintln(w, mapURL)
+	//} else {
+	//	fmt.Fprintln(w, "NOTHING")
+	//	fmt.Fprintln(w, mapURL)
+	//}
 	//curl -i -X  GET http://localhost:8080/44dac6
 }
 
