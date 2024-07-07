@@ -39,8 +39,8 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 		w.Header().Set("Content-Type", "text/plain")
 		w.Header().Set("Content-Length", strconv.Itoa(len(mapURL[string(body)])))
-		fmt.Fprintln(w, "http://localhost:8080/"+mapURL[string(body)])
-		// curl -i -X POST -H "Content-Type: text/plain" -d "Hello, W23or" http://localhost:8080
+		fmt.Fprintln(w, "https://"+r.Host+"/"+mapURL[string(body)])
+		// curl -i -X POST -H "Content-Type: text/plain" -d "https://dzen.ru/" http://localhost:8080
 	}
 }
 
@@ -51,20 +51,9 @@ func idPage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"] // TODO: Значение мы получили здесь, вытаскиваем ключ из мапы по этому ключу и делаем редирект
 	key := searchKey(id)
-	w.Header().Set("Content-Length", "50")
-	w.Header().Del("Date")
+	w.Header().Set("Location", key)
 	w.WriteHeader(http.StatusTemporaryRedirect)
-	w.Header().Set("Location", "https://"+key)
-	fmt.Fprintln(w, key)
-
-	//if key, ok := mapURL[id]; ok {
-	//	fmt.Fprintln(w, key)
-	//	fmt.Fprintln(w, mapURL)
-	//} else {
-	//	fmt.Fprintln(w, "NOTHING")
-	//	fmt.Fprintln(w, mapURL)
-	//}
-	//curl -i -X  GET http://localhost:8080/44dac6
+	//curl -i -X  GET http://localhost:8080/8d26b0
 }
 
 func main() {
