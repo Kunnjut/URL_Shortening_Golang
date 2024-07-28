@@ -36,10 +36,13 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 		hasher.Write(body)
 		hash := hex.EncodeToString(hasher.Sum(nil))
 		mapURL[string(body)] = hash[:6]
-		w.WriteHeader(http.StatusCreated)
-		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.Header().Set("Content-Length", strconv.Itoa(len(mapURL[string(body)])))
-		fmt.Fprintln(w, "https://"+r.Host+"/"+mapURL[string(body)])
+		w.WriteHeader(http.StatusCreated)
+		_, err = fmt.Fprintln(w, "https://"+r.Host+"/"+mapURL[string(body)])
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 		// curl -i -X POST -H "Content-Type: text/plain" -d "https://dzen.ru/" http://localhost:8080
 	}
 }
@@ -51,6 +54,11 @@ func idPage(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"] // TODO: Значение мы получили здесь, вытаскиваем ключ из мапы по этому ключу и делаем редирект
 	key := searchKey(id)
+	if key == "" {
+		http.NotFound(w, r)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	w.Header().Set("Location", key)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 	//curl -i -X  GET http://localhost:8080/8d26b0
@@ -59,7 +67,7 @@ func idPage(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/", mainPage)
-	router.HandleFunc("/{id}", idPage)
+	router.HandleFunc("/{id}", idPage).Methods(http.MethodGet)
 	err := http.ListenAndServe(":8080", router)
 	if err != nil {
 		panic(err)
