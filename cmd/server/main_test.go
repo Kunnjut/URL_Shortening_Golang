@@ -38,7 +38,7 @@ func TestMainPageHandler(t *testing.T) {
 			method:              "POST",
 			body:                "https://dzen.ru/",
 			expectedCode:        201,
-			expectedBody:        "https://example.com/8d26b0\n",
+			expectedBody:        "http://example.com/8d26b0\n",
 			expectedContentType: "text/plain; charset=utf-8",
 		},
 	}
