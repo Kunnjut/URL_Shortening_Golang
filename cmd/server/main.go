@@ -37,9 +37,10 @@ func mainPage(w http.ResponseWriter, r *http.Request) {
 		hash := hex.EncodeToString(hasher.Sum(nil))
 		mapURL[string(body)] = hash[:6]
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Header().Set("Content-Length", strconv.Itoa(len(mapURL[string(body)])))
+		//w.Header().Set("Content-Length", strconv.Itoa(len(mapURL[string(body)]))) // TODO: len может не соответствовать реальной длине после преобразования в строку
+		w.Header().Set("Content-Length", strconv.Itoa(len("http://"+r.Host+"/"+mapURL[string(body)]+"\n")))
 		w.WriteHeader(http.StatusCreated)
-		_, err = fmt.Fprintln(w, "https://"+r.Host+"/"+mapURL[string(body)])
+		_, err = fmt.Fprintln(w, "http://"+r.Host+"/"+mapURL[string(body)])
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
